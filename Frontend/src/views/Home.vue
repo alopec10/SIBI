@@ -7,16 +7,24 @@
       clearable
     ></v-text-field>
     <v-btn @click="searchByTitle"></v-btn>
-    <ArtworkHorizontal
+    <ArtworkCollapsed v-if="render"
+            :art_id="aw[0].art_id"
+            :title="aw[0].title"
+            :author="aw[0].author"
+            :review_score="aw[0].review_score"
+            :img_url="aw[0].img_url"
+          />
+    <ArtworkHorizontal v-if="render"
       style="margin-top:40px;margin-left:40px"
-      :art_id="artworks[0].art_id"
-      :title="artworks[0].title"
-      :author="artworks[0].author"
-      :date="artworks[0].date"
-      :location="artworks[0].location"
-      :type="artworks[0].type"
-      :school="artworks[0].school"
-      :img_url="artworks[0].img_url"
+      :art_id="aw[0].art_id"
+      :title="aw[0].title"
+      :author="aw[0].author"
+      :date="aw[0].date"
+      :location="aw[0].location"
+      :art_form="aw[0].art_form"
+      :art_type="aw[0].art_type"
+      :school="aw[0].school"
+      :img_url="aw[0].img_url"
     />
   </div>
 </template>
@@ -35,6 +43,7 @@ export default {
     return {
       step: 1,
       searchTitle: "",
+      render: false,
       artworks: [
         {
           art_id: 1,
@@ -55,7 +64,7 @@ export default {
   methods: {
     searchByTitle: function() {
       axios
-        .post("http://localhost:3000/searchTitle", {
+        .post("http://localhost:3000/searchByTitleHorizontal", {
           title: this.searchTitle,
         })
         .then((response) => {
@@ -66,10 +75,13 @@ export default {
               "No se ha encontrado ninguna obra con ese nombre. Recuerda buscar en inglés"
             );
           } else {
-            for (var i = 0; i < response.data.length; i++) {
-              this.aw = JSON.stringify(response.data);
-              console.log(this.aw);
-            }
+            //for (var i = 0; i < response.data.length; i++) {
+              //this.aw = JSON.stringify(response.data);
+              //this.aw = JSON.parse(this.aw);
+              this.aw = response.data;
+              this.render = true;
+              console.log(this.aw)
+            //}
           }
         })
         .catch((error) => {

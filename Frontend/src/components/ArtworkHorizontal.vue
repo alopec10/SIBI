@@ -19,8 +19,9 @@
             <v-card-subtitle style="margin-top:10px;font-size:2em">{{author}}</v-card-subtitle>
             <v-card-text style="margin-top:10px;font-size:1em">{{date}}</v-card-text>
             <v-card-text style="margin-top:-20px;font-size:1em">{{location}}</v-card-text>
-            <v-card-text style="margin-top:-20px;font-size:1em">{{type}}</v-card-text>
-            <v-card-text style="margin-top:-20px;font-size:1em">{{school}}</v-card-text>
+            <v-card-text style="margin-top:-20px;font-size:1em">{{art_form}}</v-card-text>
+            <v-card-text style="margin-top:-20px;font-size:1em">{{art_type}}</v-card-text>
+            <v-card-text style="margin-top:-20px;font-size:1em">{{school}} school</v-card-text>
               <v-card-text style="font-size:1em">Danos tu opinión</v-card-text>
               <v-rating hover length="5" size="50" color="blue"> </v-rating>
           </v-card>
@@ -41,7 +42,8 @@ export default {
     img_url: "",
     date:"",
     location:"",
-    type:"",
+    art_form:"",
+    art_type:"",
     school:""
   },
 };
