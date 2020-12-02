@@ -11,8 +11,8 @@
             :art_id="aw[0].art_id"
             :title="aw[0].title"
             :author="aw[0].author"
-            :review_score="aw[0].review_score"
             :img_url="aw[0].img_url"
+            :rating = 3
           />
     <ArtworkHorizontal v-if="render"
       style="margin-top:40px;margin-left:40px"
@@ -25,6 +25,7 @@
       :art_type="aw[0].art_type"
       :school="aw[0].school"
       :img_url="aw[0].img_url"
+      :rating = 3
     />
   </div>
 </template>

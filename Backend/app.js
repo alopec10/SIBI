@@ -142,7 +142,7 @@ app.post("/searchAWById", function (req, res) {
   var query =
     "MATCH (w:ArtWork), (a)-[:MADE]->(w), (w)-[:USES_TECHNIQUE]->(t), (w)-[:LOCATED_AT]->(l), (w)-[:ITS_FORM_IS]->(f), (w)-[:ITS_TYPE_IS]->(y), (w)-[:ITS_SCHOOL_IS]->(s) WHERE (w.id)=(" +
     parseInt(id) +
-    ") return w.id, w.title, w.url, a.author_name, w.date, t.technique, l.location, f.art_form, y.arttype, s.school";
+    ") return ID(w), w.title, w.url, a.author_name, w.date, t.technique, l.location, f.art_form, y.arttype, s.school";
 
   const session = driver.session();
 
@@ -156,7 +156,7 @@ app.post("/searchAWById", function (req, res) {
       } else {
         for (var i = 0; i < result.records.length; i++) {
           var artwork = {
-            id: result.records[i]._fields[0].low,
+            art_id: result.records[i]._fields[0].low,
             title: result.records[i]._fields[1],
             img_url: imageUrlParser(result.records[i]._fields[2]),
             author: result.records[i]._fields[3],
@@ -189,7 +189,7 @@ app.post("/searchAWByTitle", function (req, res) {
   var query =
     "MATCH (w:ArtWork), (a)-[:MADE]->(w), (w)-[:USES_TECHNIQUE]->(t), (w)-[:LOCATED_AT]->(l), (w)-[:ITS_FORM_IS]->(f), (w)-[:ITS_TYPE_IS]->(y), (w)-[:ITS_SCHOOL_IS]->(s) WHERE TOLOWER(w.title)=~TOLOWER('.*" +
     title +
-    ".*') return w.id, w.title, w.url, a.author_name, w.date, t.technique, l.location, f.art_form, y.arttype, s.school";
+    ".*') return ID(w), w.title, w.url, a.author_name, w.date, t.technique, l.location, f.art_form, y.arttype, s.school";
 
   const session = driver.session();
 
@@ -203,7 +203,7 @@ app.post("/searchAWByTitle", function (req, res) {
       } else {
         for (var i = 0; i < result.records.length; i++) {
           var artwork = {
-            id: result.records[i]._fields[0].low,
+            art_id: result.records[i]._fields[0].low,
             title: result.records[i]._fields[1],
             img_url: imageUrlParser(result.records[i]._fields[2]),
             author: result.records[i]._fields[3],
@@ -218,6 +218,49 @@ app.post("/searchAWByTitle", function (req, res) {
         }
         res.send(artworks);
       }
+      session.close();
+    })
+    .catch((error) => {
+      // handle error
+      res.json({
+        msg: "Error",
+      });
+      console.log(error);
+      session.close();
+    });
+});
+
+app.post("/submitRating", function (req, res) {
+  var idUser = req.body.idUser;
+  var idArtwork = req.body.idArtwork;
+  var rating = req.body.rating;
+
+  var query =
+    "MATCH (u:User) WHERE ID(u) = " +
+    idUser +
+    " WITH u MATCH (w:ArtWork) WHERE ID(w) = " +
+    idArtwork +
+    " WITH u,w MERGE (u)-[r:RATED]->(w) ON CREATE SET r.score = " +
+    rating +
+    " ON MATCH SET r.score = " +
+    rating +
+    " RETURN null";
+
+  const session = driver.session();
+
+  const resultPromise = session.run(query);
+  resultPromise
+    .then((result) => {
+      if (result.records[0]._fields[0] != null) {
+        res.json({
+          msg: "Error",
+        });
+      } else {
+        res.json({
+          msg: "Success",
+        });
+      }
+
       session.close();
     })
     .catch((error) => {

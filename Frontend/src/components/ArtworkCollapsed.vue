@@ -15,7 +15,8 @@
           color="blue"
           dense
           style="margin-top:-12px; margin-left: 10px; padding-bottom:8px"
-          v-model="review_score"
+          v-model="rating_after"
+          readonly
         >
         </v-rating>
       </div>
@@ -26,12 +27,20 @@
 <script>
 export default {
   name: "ArtworkHorizontal",
+  data() {
+    return {
+      rating_after: 0,
+    };
+  },
   props: {
     title: "",
     author: "",
     art_id: "",
-    review_score: "",
+    rating: null,
     img_url: ""
+  },
+  mounted: function() {
+    this.rating_after = this.rating;
   },
   methods: {
   },
