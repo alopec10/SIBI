@@ -140,7 +140,7 @@ app.post("/searchAWById", function (req, res) {
   var id = req.body.id;
   var artworks = [];
   var query =
-    "MATCH (w:ArtWork), (a)-[:MADE]->(w), (w)-[:USES_TECHNIQUE]->(t), (w)-[:LOCATED_AT]->(l), (w)-[:ITS_FORM_IS]->(f), (w)-[:ITS_TYPE_IS]->(y), (w)-[:ITS_SCHOOL_IS]->(s) WHERE (w.id)=(" +
+    "MATCH (w:ArtWork), (a)-[:MADE]->(w), (w)-[:USES_TECHNIQUE]->(t), (w)-[:LOCATED_AT]->(l), (w)-[:ITS_FORM_IS]->(f), (w)-[:ITS_TYPE_IS]->(y), (w)-[:ITS_SCHOOL_IS]->(s) WHERE ID(w)=(" +
     parseInt(id) +
     ") return ID(w), w.title, w.url, a.author_name, w.date, t.technique, l.location, f.art_form, y.arttype, s.school";
 
@@ -272,6 +272,56 @@ app.post("/submitRating", function (req, res) {
       session.close();
     });
 });
+
+app.post("/searchMyRatings", function (req, res) {
+  var idUser = req.body.idUser;
+  var artworks = [];
+  var query =
+    "MATCH (u:User)-[r:RATED]->(w:ArtWork), (a)-[:MADE]->(w), (w)-[:USES_TECHNIQUE]->(t), (w)-[:LOCATED_AT]->(l), (w)-[:ITS_FORM_IS]->(f), (w)-[:ITS_TYPE_IS]->(y), (w)-[:ITS_SCHOOL_IS]->(s) WHERE ID(u) = "+idUser+" RETURN ID(w), w.title, w.url, a.author_name, w.date, t.technique, l.location, f.art_form, y.arttype, s.school, r.score";
+    
+  const session = driver.session();
+
+  const resultPromise = session.run(query);
+  resultPromise
+  .then((result) => {
+    if (result.records.length == 0) {
+      
+      res.json({
+        msg: "Error",
+      });
+    } else {
+      for (var i = 0; i < result.records.length; i++) {
+        
+        var artwork = {
+          art_id: result.records[i]._fields[0].low,
+          title: result.records[i]._fields[1],
+          img_url: imageUrlParser(result.records[i]._fields[2]),
+          author: result.records[i]._fields[3],
+          date: result.records[i]._fields[4],
+          technique: result.records[i]._fields[5],
+          location: result.records[i]._fields[6],
+          art_form: result.records[i]._fields[7],
+          art_type: result.records[i]._fields[8],
+          school: result.records[i]._fields[9],
+          rating: result.records[i]._fields[10],
+        };
+        artworks.push(artwork);
+      }
+      res.send(artworks);
+      console.log(artworks)
+    }
+    session.close();
+  })
+    .catch((error) => {
+      // handle error
+      res.json({
+        msg: "Error",
+      });
+      console.log(error);
+      session.close();
+    });
+});
+
 
 function imageUrlParser(url) {
   img_url = url.replace("html", "detail").replace("html", "jpg");

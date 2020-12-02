@@ -1,8 +1,16 @@
 <template>
-  <div class="myreviews">
-    <v-container grid-list-md text-xs-center fluid>
+  <div class="myreviews" v-if="loaded">
+    <v-container  grid-list-md text-xs-center fluid>
       <v-layout align-start justify-start row wrap>
-        <v-flex v-for="artwork in artworks" v-bind:key="artwork.id" mt-10 ml-10 sm="4" md="3" lg="2">
+        <v-flex 
+          v-for="artwork in artworks"
+          v-bind:key="artwork.id"
+          mt-10
+          ml-10
+          sm="4"
+          md="3"
+          lg="2"
+        >
           <ArtworkCollapsed
             :art_id="artwork.art_id"
             :title="artwork.title"
@@ -17,6 +25,8 @@
 </template>
 
 <script>
+import { mapState } from "vuex";
+const axios = require("axios");
 // @ is an alias to /src
 import ArtworkCollapsed from "@/components/ArtworkCollapsed.vue";
 import ArtworkHorizontal from "@/components/ArtworkHorizontal.vue";
@@ -25,14 +35,15 @@ export default {
   components: { ArtworkCollapsed, ArtworkHorizontal },
   data() {
     return {
-      artworks: [
+      artworks: [],
+      loaded: false,
+      temp_artworks: [
         {
           art_id: 1,
           title: "Mona Lisa",
           author: "LEONARDO Da Vinci",
           review_score: 4,
-          img_url:
-            "https://www.wga.hu/detail/l/leonardo/04/0monalis.jpg",
+          img_url: "https://www.wga.hu/detail/l/leonardo/04/0monalis.jpg",
         },
         {
           art_id: 2,
@@ -84,6 +95,41 @@ export default {
         },
       ],
     };
+  },
+  computed: {
+    ...mapState(["idUser"]),
+  },
+  mounted: function() {
+    this.searchMyRatings();
+  },
+  methods: {
+    searchMyRatings: function() {
+      const constData = { idUser: this.idUser };
+      axios
+        .post("http://localhost:3000/searchMyRatings", constData)
+        .then((response) => {
+          // handle success
+          var json = { msg: "Error" };
+          if (JSON.stringify(response.data) == JSON.stringify(json)) {
+            alert("No has valorado ninguna obra todavía");
+          } else {
+            //for (var i = 0; i < response.data.length; i++) {
+            //this.aw = JSON.stringify(response.data);
+            //this.aw = JSON.parse(this.aw);
+            this.artworks = response.data;
+            //this.render = true;
+            //}
+          }
+        })
+        .catch((error) => {
+          // handle error
+          console.log(error);
+        })
+        .then(function() {
+          // always executed
+        });
+        this.loaded = true;
+    },
   },
 };
 </script>
