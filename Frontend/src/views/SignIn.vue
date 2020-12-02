@@ -188,11 +188,10 @@ export default {
     snackbar: false,
   }),
   computed: {
-    ...mapState(["logged", "emailUsuario", "IP"]),
+    ...mapState(["logged", "emailUsuario", "IP", "idUser"]),
   },
   methods: {
     signup() {
-      
       if (this.nombre != "" && this.apellidos != "") {
         const userData = {
           name: this.name,
@@ -201,17 +200,28 @@ export default {
           pass: this.password,
           username: this.username,
         };
-
-        axios.post("http://localhost:3000/SignUp", userData).then((response) => {
-          if (Object.prototype.hasOwnProperty.call(response.data, "error")) {
-            alert("error")
-          } else {
-            this.logearse();
-            this.setEmail(this.email);
-            this.setNombre(response.data.nombre);
-            this.$router.push("/Intro");
-          }
-        });
+        var usernameError = { msg: "username" };
+        var emailError = { msg: "email" };
+        axios
+          .post("http://localhost:3000/SignUp", userData)
+          .then((response) => {
+            if (Object.prototype.hasOwnProperty.call(response.data, "error")) {
+              alert("Ha habido un error");
+            } else if (
+              JSON.stringify(response.data) == JSON.stringify(usernameError)
+            ) {
+              alert("El nombre de usuario ya está en uso");
+            } else if (
+              JSON.stringify(response.data) == JSON.stringify(emailError)
+            ) {
+              alert("El email ya está en uso");
+            } else {
+              this.logearse();
+              this.setEmail(this.email);
+              this.setIdUser(JSON.stringify(response.data.low));
+              this.$router.push("/Intro");
+            }
+          });
       }
     },
     signin() {
@@ -225,22 +235,28 @@ export default {
         // this.$router.push("/Home");
 
         axios.post("http://localhost:3000/Login", userData).then((response) => {
-          var json = {msg: 'Error'};
-          if(JSON.stringify(response.data)==JSON.stringify(json)){
-            alert('Usuario o contraseña incorrectos');
+          var json = { msg: "Error" };
+          if (JSON.stringify(response.data) == JSON.stringify(json)) {
+            alert("Usuario o contraseña incorrectos");
             this.password = "";
             this.email = "";
             //this.alerta = true;
           } else {
             this.logearse();
             this.setEmail(this.email);
-            this.setNombre(response.data.nombre);
+            this.setIdUser(JSON.stringify(response.data.low));
             this.$router.push("/Home");
           }
         });
       }
     },
-    ...mapMutations(["logearse", "setEmail", "setOk", "setNombre"]),
+    ...mapMutations([
+      "logearse",
+      "setEmail",
+      "setOk",
+      "setNombre",
+      "setIdUser",
+    ]),
   },
 };
 </script>

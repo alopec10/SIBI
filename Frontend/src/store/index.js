@@ -1,40 +1,43 @@
-import Vue from 'vue'
-import Vuex from 'vuex'
-import createPersistedState from 'vuex-persistedstate'
+import Vue from "vue";
+import Vuex from "vuex";
+import createPersistedState from "vuex-persistedstate";
 
-Vue.use(Vuex)
+Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
     logged: false,
-    emailUsuario: '',
-    IP: 'http://localhost:3000',
+    emailUsuario: "",
+    IP: "http://localhost:3000",
     ok: false,
-    nombre: ''
+    idUser: null,
+    nombre: "",
   },
   plugins: [createPersistedState()],
   mutations: {
-    logearse(state){
-      state.logged = true
+    logearse(state) {
+      state.logged = true;
     },
-    deslogearse(state){
-      state.logged = false
-      state.emailUsuario = ''
-      state.ok = false
-      state.nombre = ''
+    deslogearse(state) {
+      state.logged = false;
+      state.emailUsuario = "";
+      state.ok = false;
+      state.nombre = "";
+      state.idUser = null;
     },
-    setEmail(state, msg){
-      state.emailUsuario = msg
+    setEmail(state, msg) {
+      state.emailUsuario = msg;
     },
-    setOk(state){
-      state.ok=true
+    setIdUser(state, msg) {
+      state.idUser = msg;
     },
-    setNombre(state, nombre){
-      state.nombre = nombre
-    }
+    setOk(state) {
+      state.ok = true;
+    },
+    setNombre(state, nombre) {
+      state.nombre = nombre;
+    },
   },
-  actions: {
-  },
-  modules: {
-  }
-})
+  actions: {},
+  modules: {},
+});

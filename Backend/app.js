@@ -20,45 +20,92 @@ function encriptar(user, pass) {
   return hmac;
 }
 
-
 app.post("/SignUp", function (req, res) {
   var email = req.body.email;
   var username = req.body.username;
   var name = req.body.name;
-  var surname = req.body.surname
+  var surname = req.body.surname;
   var passEncriptada = encriptar(req.body.email, req.body.pass);
-  var query = "CREATE (u:User {username: '"+username+"', email: '"+email+"', name: '"+name+"', surname: '"+surname+"', password: '"+passEncriptada+"'})";
-  
+
+  var query1 =
+    "MATCH (u:User) WHERE u.username = '" + username + "' return ID(u)";
+  var query2 = "MATCH (u:User) WHERE u.email = '" + email + "' return ID(u)";
+
+  var query3 =
+    "CREATE (u:User {username: '" +
+    username +
+    "', email: '" +
+    email +
+    "', name: '" +
+    name +
+    "', surname: '" +
+    surname +
+    "', password: '" +
+    passEncriptada +
+    "'}) RETURN ID(u)";
 
   const session = driver.session();
 
-  const resultPromise = session.run(query);
-  resultPromise.then(result => {
-      
-      res.json({
-          msg: 'Bien'
-      });
-      session.close();
-  })
-  .catch((error) => {
+  const resultPromise = session.run(query1);
+  resultPromise
+    .then((result) => {
+      if (result.records.length != 0) {
+        res.json({
+          msg: "username",
+        });
+        session.close();
+      } else {
+        const resultPromise = session.run(query2);
+        resultPromise
+          .then((result) => {
+            if (result.records.length != 0) {
+              res.json({
+                msg: "email",
+              });
+              session.close();
+            } else {
+              const resultPromise = session.run(query3);
+              resultPromise
+                .then((result) => {
+                  var record = result.records[0]._fields[0];
+                  res.send(record);
+                  session.close();
+                })
+                .catch((error) => {
+                  // handle error
+                  res.json({
+                    msg: "error",
+                  });
+                  console.log(error);
+                  session.close();
+                });
+            }
+          })
+          .catch((error) => {
+            // handle error
+            res.json({
+              msg: "error",
+            });
+            console.log(error);
+            session.close();
+          });
+      }
+    })
+    .catch((error) => {
       // handle error
       res.json({
-          msg: 'error'
+        msg: "error",
       });
-      console.log(error)
+      console.log(error);
       session.close();
-  })
-
-  
+    });
 });
-
-
 
 app.post("/Login", (req, res) => {
   var email = req.body.email;
   var passEncriptada = encriptar(req.body.email, req.body.pass);
   var query =
-    "MATCH (u:User) WHERE TOLOWER(u.email) =~ TOLOWER('" +
+    "MATCH (u:User) WHERE (u.email) =~ ('" +
     email +
     "') AND (u.password) = '" +
     passEncriptada +
@@ -73,7 +120,7 @@ app.post("/Login", (req, res) => {
         res.json({
           msg: "Error",
         });
-      } else {        
+      } else {
         var record = result.records[0]._fields[0];
         res.send(record);
       }
