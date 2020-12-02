@@ -9,8 +9,8 @@
           </v-card>
         </v-col>
         <v-col>
-          <v-card width="450" elevation="0">
-            <v-card-title
+          <v-card width="500" elevation="0">
+            <v-card-title 
               style="font-size:2.5em; font-weight:bold; margin-top: 10px"
               >{{ title }}</v-card-title
             >
@@ -48,6 +48,7 @@
     </v-container>
   </v-card>
 </template>
+
 
 <script>
 import { mapState } from "vuex";

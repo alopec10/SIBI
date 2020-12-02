@@ -13,11 +13,15 @@
         <h1 style="font-family: Montserrat Alternates">FIBONART</h1>
       </div>
       <v-btn href="/Home" text style="margin-left:20px" large>
-        Inicio
+        <v-icon style="padding-right: 5px">home</v-icon> Inicio
       </v-btn>
       <v-btn href="/MyReviews" text large>
-        Mis Reviews
+        <v-icon style="padding-right: 5px">list</v-icon>Mis Valoraciones
       </v-btn>
+      <v-btn href="/Search" text large>
+        <v-icon style="padding-right: 5px">search</v-icon>Búsqueda
+      </v-btn>
+
       <v-spacer></v-spacer>
       <v-btn @click="logout" text>
         <span class="mr-2">Cerrar sesión</span>
@@ -52,9 +56,7 @@ export default {
     ArtworkHorizontal,
   },
 
-  data: () => ({
-    
-  }),
+  data: () => ({}),
   methods: {
     logout() {
       this.deslogearse();

@@ -184,14 +184,15 @@ app.post("/searchAWById", function (req, res) {
 });
 
 app.post("/searchAWByTitle", function (req, res) {
-  var title = req.body.title;
+  var title = req.body.title.toString();
   var artworks = [];
   var query =
-    "MATCH (w:ArtWork), (a)-[:MADE]->(w), (w)-[:USES_TECHNIQUE]->(t), (w)-[:LOCATED_AT]->(l), (w)-[:ITS_FORM_IS]->(f), (w)-[:ITS_TYPE_IS]->(y), (w)-[:ITS_SCHOOL_IS]->(s) WHERE TOLOWER(w.title)=~TOLOWER('.*" +
+    "MATCH (w:ArtWork), (a)-[:MADE]->(w), (w)-[:USES_TECHNIQUE]->(t), (w)-[:LOCATED_AT]->(l), (w)-[:ITS_FORM_IS]->(f), (w)-[:ITS_TYPE_IS]->(y), (w)-[:ITS_SCHOOL_IS]->(s) WHERE (w.title)=~('.*" +
     title +
     ".*') return ID(w), w.title, w.url, a.author_name, w.date, t.technique, l.location, f.art_form, y.arttype, s.school";
 
   const session = driver.session();
+
 
   const resultPromise = session.run(query);
   resultPromise
