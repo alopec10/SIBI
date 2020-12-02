@@ -64,8 +64,8 @@ export default {
   methods: {
     searchByTitle: function() {
       axios
-        .post("http://localhost:3000/searchByTitleHorizontal", {
-          title: this.searchTitle,
+        .post("http://localhost:3000/searchAWById", {
+          id: this.searchTitle,
         })
         .then((response) => {
           // handle success

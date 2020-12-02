@@ -141,8 +141,7 @@
                       <div class="text-center mt-6">
                         <v-btn @click="signup" large :color="bgColor" dark>
                           Registrarse
-                          </v-btn
-                        >
+                        </v-btn>
                       </div>
                     </v-form>
                   </v-card-text>
@@ -189,20 +188,31 @@ export default {
     snackbar: false,
   }),
   computed: {
-    ...["logged"],
+    ...mapState(["logged", "emailUsuario", "IP"]),
   },
   methods: {
     signup() {
+      
       if (this.nombre != "" && this.apellidos != "") {
         const userData = {
-          nombre: this.nombre,
-          apellidos: this.apellidos,
+          name: this.name,
+          surname: this.surname,
           email: this.email,
-          pass: this.password
+          pass: this.password,
+          username: this.username,
         };
+
+        axios.post("http://localhost:3000/SignUp", userData).then((response) => {
+          if (Object.prototype.hasOwnProperty.call(response.data, "error")) {
+            alert("error")
+          } else {
+            this.logearse();
+            this.setEmail(this.email);
+            this.setNombre(response.data.nombre);
+            this.$router.push("/Intro");
+          }
+        });
       }
-      this.logearse();
-      this.$router.push("/Intro");
     },
     signin() {
       if (this.email != "" && this.password != "") {
@@ -211,27 +221,26 @@ export default {
           pass: this.password,
         };
         //Provisional
-        this.logearse();
-        this.$router.push("/Home");
-        
-        // axios.post(this.IP + "/usuarios/login", userData).then((response) => {
-        //   if (Object.prototype.hasOwnProperty.call(response.data, "error")) {
-        //     this.password = "";
-        //     this.email = "";
-        //     this.alerta = true;
-        //   } else {
-        //     this.logearse();
-        //     this.setEmail(this.email);
-        //     this.setNombre(response.data.nombre);
-        //     if (response.data.compra == true) {
-        //       this.setOk();
-        //     }
-        //     this.$router.push("/Home");
-        //   }
-        // });
+        // this.logearse();
+        // this.$router.push("/Home");
+
+        axios.post("http://localhost:3000/Login", userData).then((response) => {
+          var json = {msg: 'Error'};
+          if(JSON.stringify(response.data)==JSON.stringify(json)){
+            alert('Usuario o contraseña incorrectos');
+            this.password = "";
+            this.email = "";
+            //this.alerta = true;
+          } else {
+            this.logearse();
+            this.setEmail(this.email);
+            this.setNombre(response.data.nombre);
+            this.$router.push("/Home");
+          }
+        });
       }
     },
-    ...mapMutations(["logearse"]),
+    ...mapMutations(["logearse", "setEmail", "setOk", "setNombre"]),
   },
 };
 </script>

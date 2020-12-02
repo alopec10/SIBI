@@ -8,7 +8,7 @@ export default new Vuex.Store({
   state: {
     logged: false,
     emailUsuario: '',
-    IP: 'http://localhost:8080',
+    IP: 'http://localhost:3000',
     ok: false,
     nombre: ''
   },
@@ -23,6 +23,15 @@ export default new Vuex.Store({
       state.ok = false
       state.nombre = ''
     },
+    setEmail(state, msg){
+      state.emailUsuario = msg
+    },
+    setOk(state){
+      state.ok=true
+    },
+    setNombre(state, nombre){
+      state.nombre = nombre
+    }
   },
   actions: {
   },
