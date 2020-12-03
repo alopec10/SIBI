@@ -26,7 +26,7 @@
 
 <script>
 export default {
-  name: "ArtworkHorizontal",
+  name: "ArtworkCollapsed",
   data() {
     return {
       rating_after: 0,
@@ -36,8 +36,13 @@ export default {
     title: "",
     author: "",
     art_id: "",
-    rating: null,
-    img_url: ""
+    rating: 0,
+    img_url: "",
+    date: "",
+    location: "",
+    art_form: "",
+    art_type: "",
+    school: "",
   },
   mounted: function() {
     this.rating_after = this.rating;

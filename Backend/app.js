@@ -185,9 +185,10 @@ app.post("/searchAWById", function (req, res) {
 
 app.post("/searchAWByTitle", function (req, res) {
   var title = req.body.title.toString().toLowerCase();
+  var idUser = req.body.idUser;
   var artworks = [];
-  var query =
-    "MATCH (w:ArtWork), (a)-[:MADE]->(w), (w)-[:USES_TECHNIQUE]->(t), (w)-[:LOCATED_AT]->(l), (w)-[:ITS_FORM_IS]->(f), (w)-[:ITS_TYPE_IS]->(y), (w)-[:ITS_SCHOOL_IS]->(s) WHERE TOLOWER(w.title) CONTAINS '"+title+"' return ID(w), w.title, w.url, a.author_name, w.date, t.technique, l.location, f.art_form, y.arttype, s.school";
+  //var query = "MATCH (w:ArtWork), (u:User)-[r:RATED]->(w:ArtWork), (a)-[:MADE]->(w), (w)-[:USES_TECHNIQUE]->(t), (w)-[:LOCATED_AT]->(l), (w)-[:ITS_FORM_IS]->(f), (w)-[:ITS_TYPE_IS]->(y), (w)-[:ITS_SCHOOL_IS]->(s) WHERE TOLOWER(w.title) CONTAINS '"+title+"' AND ID(u) = "+idUser+" return ID(w), w.title, w.url, a.author_name, w.date, t.technique, l.location, f.art_form, y.arttype, s.school, r.score";
+  var query = "MATCH (w:ArtWork), (a)-[:MADE]->(w), (w)-[:USES_TECHNIQUE]->(t), (w)-[:LOCATED_AT]->(l), (w)-[:ITS_FORM_IS]->(f), (w)-[:ITS_TYPE_IS]->(y), (w)-[:ITS_SCHOOL_IS]->(s) WHERE TOLOWER(w.title) CONTAINS '"+title+"' OPTIONAL MATCH ((u:User {id: "+idUser+"})-[r:RATED]->(w:ArtWork)) RETURN ID(w), w.title, w.url, a.author_name, w.date, t.technique, l.location, f.art_form, y.arttype, s.school, r.score";
 
   const session = driver.session();
 
@@ -212,7 +213,12 @@ app.post("/searchAWByTitle", function (req, res) {
             art_form: result.records[i]._fields[7],
             art_type: result.records[i]._fields[8],
             school: result.records[i]._fields[9],
+            rating: result.records[i]._fields[10],
+
           };
+          if (artwork.rating == null) {
+            artwork.rating = 0;
+          }
           artworks.push(artwork);
         }
         res.send(artworks);
@@ -259,7 +265,6 @@ app.post("/submitRating", function (req, res) {
           msg: "Success",
         });
       }
-
       session.close();
     })
     .catch((error) => {

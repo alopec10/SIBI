@@ -18,17 +18,15 @@
             class="centered_text"
           ></v-text-field>
           <div class="text-center">
-            <v-btn @click="searchByTitle" large color="blue" dark
-              >Buscar</v-btn
-            >
+            <v-btn @click="searchByTitle" large color="blue" dark>Buscar</v-btn>
           </div>
         </v-col>
       </v-row>
     </v-container>
-    <v-container  grid-list-md text-xs-center fluid>
+    <v-container grid-list-md text-xs-center fluid v-if="render">
       <v-layout align-start justify-start row wrap>
-        <v-flex 
-          v-for="artwork in aw"
+        <v-flex
+          v-for="(artwork, index) in aw"
           v-bind:key="artwork.id"
           mt-10
           ml-10
@@ -36,30 +34,43 @@
           md="3"
           lg="2"
         >
-          <ArtworkCollapsed
-            :art_id="artwork.art_id"
-            :title="artwork.title"
-            :author="artwork.author"
-            :review_score="artwork.review_score"
-            :img_url="artwork.img_url"
-          />
+          <v-hover>
+            <ArtworkCollapsed
+              v-if="render"
+              slot-scope="{ hover }"
+              :class="`elevation-${hover ? 24 : 2}`"
+              :art_id="artwork.art_id"
+              :title="artwork.title"
+              :author="artwork.author"
+              :rating="artwork.rating.low"
+              :img_url="artwork.img_url"
+              @click.native="changeDisplay(index)"
+            />
+          </v-hover>
         </v-flex>
       </v-layout>
     </v-container>
-    <ArtworkHorizontal
-      v-if="render"
-      style="margin-top:40px;margin-left:40px"
-      :art_id="aw[0].art_id"
-      :title="aw[0].title"
-      :author="aw[0].author"
-      :date="aw[0].date"
-      :location="aw[0].location"
-      :art_form="aw[0].art_form"
-      :art_type="aw[0].art_type"
-      :school="aw[0].school"
-      :img_url="aw[0].img_url"
-      :rating="3"
-    />
+    <v-container fluid v-if="render2">
+      <v-layout align-start justify-center>
+        <ArtworkHorizontal
+          v-if="render2"
+          style="margin-top:40px;margin-left:40px"
+          :art_id="aw[i].art_id"
+          :title="aw[i].title"
+          :author="aw[i].author"
+          :date="aw[i].date"
+          :location="aw[i].location"
+          :art_form="aw[i].art_form"
+          :art_type="aw[i].art_type"
+          :school="aw[i].school"
+          :img_url="aw[i].img_url"
+          :rating="aw[i].rating.low"
+        />
+        <div @click="changeBack">
+          <v-icon large style="margin-left:30px">close</v-icon>
+        </div>
+      </v-layout>
+    </v-container>
   </div>
 </template>
 
@@ -73,7 +84,7 @@
 // @ is an alias to /src
 import ArtworkCollapsed from "@/components/ArtworkCollapsed.vue";
 import ArtworkHorizontal from "@/components/ArtworkHorizontal.vue";
-
+import { mapState } from "vuex";
 const axios = require("axios");
 
 export default {
@@ -84,6 +95,8 @@ export default {
       step: 1,
       searchTitle: "",
       render: false,
+      render2: false,
+      i: 0,
       artworks: [
         {
           art_id: 1,
@@ -101,12 +114,14 @@ export default {
       aw: [],
     };
   },
+  computed: {
+    ...mapState(["idUser"]),
+  },
   methods: {
     searchByTitle: function() {
+      const constData = {title: this.searchTitle, idUser: this.idUser };
       axios
-        .post("http://localhost:3000/searchAWByTitle", {
-          title: this.searchTitle,
-        })
+        .post("http://localhost:3000/searchAWByTitle", constData)
         .then((response) => {
           // handle success
           var json = { msg: "Error" };
@@ -130,6 +145,15 @@ export default {
         .then(function() {
           // always executed
         });
+    },
+    changeDisplay(index) {
+      this.render = false;
+      this.render2 = true;
+      this.i = index;
+    },
+    changeBack() {
+      this.render = true;
+      this.render2 = false;
     },
   },
 };
