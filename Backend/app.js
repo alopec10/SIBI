@@ -21,15 +21,15 @@ function encriptar(user, pass) {
 }
 
 app.post("/SignUp", function (req, res) {
-  var email = req.body.email;
-  var username = req.body.username;
+  var email = req.body.email.toLowerCase();
+  var username = req.body.username.toLowerCase();
   var name = req.body.name;
   var surname = req.body.surname;
   var passEncriptada = encriptar(req.body.email, req.body.pass);
 
   var query1 =
-    "MATCH (u:User) WHERE u.username = '" + username + "' return ID(u)";
-  var query2 = "MATCH (u:User) WHERE u.email = '" + email + "' return ID(u)";
+    "MATCH (u:User) WHERE TOLOWER(u.username) = '" + username + "' return ID(u)";
+  var query2 = "MATCH (u:User) WHERE TOLOWER(u.email) = '" + email + "' return ID(u)";
 
   var query3 =
     "CREATE (u:User {username: '" +
@@ -184,12 +184,10 @@ app.post("/searchAWById", function (req, res) {
 });
 
 app.post("/searchAWByTitle", function (req, res) {
-  var title = req.body.title.toString();
+  var title = req.body.title.toString().toLowerCase();
   var artworks = [];
   var query =
-    "MATCH (w:ArtWork), (a)-[:MADE]->(w), (w)-[:USES_TECHNIQUE]->(t), (w)-[:LOCATED_AT]->(l), (w)-[:ITS_FORM_IS]->(f), (w)-[:ITS_TYPE_IS]->(y), (w)-[:ITS_SCHOOL_IS]->(s) WHERE (w.title)=~('.*" +
-    title +
-    ".*') return ID(w), w.title, w.url, a.author_name, w.date, t.technique, l.location, f.art_form, y.arttype, s.school";
+    "MATCH (w:ArtWork), (a)-[:MADE]->(w), (w)-[:USES_TECHNIQUE]->(t), (w)-[:LOCATED_AT]->(l), (w)-[:ITS_FORM_IS]->(f), (w)-[:ITS_TYPE_IS]->(y), (w)-[:ITS_SCHOOL_IS]->(s) WHERE TOLOWER(w.title) CONTAINS '"+title+"' return ID(w), w.title, w.url, a.author_name, w.date, t.technique, l.location, f.art_form, y.arttype, s.school";
 
   const session = driver.session();
 
