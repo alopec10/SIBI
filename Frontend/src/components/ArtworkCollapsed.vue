@@ -6,7 +6,7 @@
       max-height="415"
     >
       <div style="margin-top:307px;background-color:white;opacity:0.85">
-        <v-card-title style="padding-top:-10px">{{title}}</v-card-title>
+        <v-card-title style="padding-top:-10px; font-size:1.2em;font-weight:bold">{{title}}</v-card-title>
         <v-card-subtitle>{{author}}</v-card-subtitle>
         <v-rating
           hover

@@ -1,9 +1,9 @@
 <template>
-  <div class="home">
-    <v-container id="signinup-form" class="fill-height">
+  <div class="search">
+    <v-container  class="fill-height">
       <v-row align="center" justify="center" no-gutters>
         <v-col cols="12" sm="8" md="8" class="">
-          <h1 class="text-center display-1 mb-10 blue--text">
+          <h1 style="font-family: Montserrat Alternates; margin-top: 20px; font-size: 3em" class="text-center mb-8 blue--text" >
             Búsqueda de obras
           </h1>
 
@@ -75,6 +75,13 @@
 </template>
 
 <style>
+@import url("https://fonts.googleapis.com/css2?family=Montserrat+Alternates");
+
+.search {
+  font-family: Montserrat, "Montserrat Alternates";
+}
+
+
 .centered_text input {
   text-align: center;
 }
@@ -97,20 +104,6 @@ export default {
       render: false,
       render2: false,
       i: 0,
-      artworks: [
-        {
-          art_id: 1,
-          title: "Vitruvian man",
-          author: "LEONARDO da Vinci",
-          review_score: null,
-          date: "1492",
-          location: "Gallerie dell'Accademia, Venice",
-          type: "graphics",
-          school: "Italian",
-          img_url:
-            "https://www.wga.hu/detail/l/leonardo/10anatom/1vitruviu.jpg",
-        },
-      ],
       aw: [],
     };
   },
@@ -130,12 +123,8 @@ export default {
               "No se ha encontrado ninguna obra con ese nombre. Recuerda buscar en inglés"
             );
           } else {
-            //for (var i = 0; i < response.data.length; i++) {
-            //this.aw = JSON.stringify(response.data);
-            //this.aw = JSON.parse(this.aw);
             this.aw = response.data;
             this.render = true;
-            //}
           }
         })
         .catch((error) => {

@@ -28,8 +28,11 @@ app.post("/SignUp", function (req, res) {
   var passEncriptada = encriptar(req.body.email, req.body.pass);
 
   var query1 =
-    "MATCH (u:User) WHERE TOLOWER(u.username) = '" + username + "' return ID(u)";
-  var query2 = "MATCH (u:User) WHERE TOLOWER(u.email) = '" + email + "' return ID(u)";
+    "MATCH (u:User) WHERE TOLOWER(u.username) = '" +
+    username +
+    "' return ID(u)";
+  var query2 =
+    "MATCH (u:User) WHERE TOLOWER(u.email) = '" + email + "' return ID(u)";
 
   var query3 =
     "CREATE (u:User {username: '" +
@@ -187,12 +190,16 @@ app.post("/searchAWByTitle", function (req, res) {
   var title = req.body.title.toString().toLowerCase();
   var idUser = req.body.idUser;
   var artworks = [];
-  //var query = "MATCH (w:ArtWork), (u:User)-[r:RATED]->(w:ArtWork), (a)-[:MADE]->(w), (w)-[:USES_TECHNIQUE]->(t), (w)-[:LOCATED_AT]->(l), (w)-[:ITS_FORM_IS]->(f), (w)-[:ITS_TYPE_IS]->(y), (w)-[:ITS_SCHOOL_IS]->(s) WHERE TOLOWER(w.title) CONTAINS '"+title+"' AND ID(u) = "+idUser+" return ID(w), w.title, w.url, a.author_name, w.date, t.technique, l.location, f.art_form, y.arttype, s.school, r.score";
-  var query = "MATCH (w:ArtWork), (a)-[:MADE]->(w), (w)-[:USES_TECHNIQUE]->(t), (w)-[:LOCATED_AT]->(l), (w)-[:ITS_FORM_IS]->(f), (w)-[:ITS_TYPE_IS]->(y), (w)-[:ITS_SCHOOL_IS]->(s) WHERE TOLOWER(w.title) CONTAINS '"+title+"' OPTIONAL MATCH ((u:User {id: "+idUser+"})-[r:RATED]->(w:ArtWork)) RETURN ID(w), w.title, w.url, a.author_name, w.date, t.technique, l.location, f.art_form, y.arttype, s.school, r.score";
+  var query =
+    "MATCH (w:ArtWork), (a)-[:MADE]->(w), (w)-[:USES_TECHNIQUE]->(t), (w)-[:LOCATED_AT]->(l), (w)-[:ITS_FORM_IS]->(f), "+
+    "(w)-[:ITS_TYPE_IS]->(y), (w)-[:ITS_SCHOOL_IS]->(s) WHERE TOLOWER(w.title) CONTAINS '" +
+    title +
+    "' OPTIONAL MATCH ((u:User {id: " +
+    idUser +
+    "})-[r:RATED]->(w:ArtWork)) "+
+    "RETURN ID(w), w.title, w.url, a.author_name, w.date, t.technique, l.location, f.art_form, y.arttype, s.school, r.score";
 
   const session = driver.session();
-
-
   const resultPromise = session.run(query);
   resultPromise
     .then((result) => {
@@ -214,7 +221,6 @@ app.post("/searchAWByTitle", function (req, res) {
             art_type: result.records[i]._fields[8],
             school: result.records[i]._fields[9],
             rating: result.records[i]._fields[10],
-
           };
           if (artwork.rating == null) {
             artwork.rating = 0;
@@ -281,41 +287,40 @@ app.post("/searchMyRatings", function (req, res) {
   var idUser = req.body.idUser;
   var artworks = [];
   var query =
-    "MATCH (u:User)-[r:RATED]->(w:ArtWork), (a)-[:MADE]->(w), (w)-[:USES_TECHNIQUE]->(t), (w)-[:LOCATED_AT]->(l), (w)-[:ITS_FORM_IS]->(f), (w)-[:ITS_TYPE_IS]->(y), (w)-[:ITS_SCHOOL_IS]->(s) WHERE ID(u) = "+idUser+" RETURN ID(w), w.title, w.url, a.author_name, w.date, t.technique, l.location, f.art_form, y.arttype, s.school, r.score";
-    
+    "MATCH (u:User)-[r:RATED]->(w:ArtWork), (a)-[:MADE]->(w), (w)-[:USES_TECHNIQUE]->(t), (w)-[:LOCATED_AT]->(l), (w)-[:ITS_FORM_IS]->(f), (w)-[:ITS_TYPE_IS]->(y), (w)-[:ITS_SCHOOL_IS]->(s) WHERE ID(u) = " +
+    idUser +
+    " RETURN ID(w), w.title, w.url, a.author_name, w.date, t.technique, l.location, f.art_form, y.arttype, s.school, r.score";
+
   const session = driver.session();
 
   const resultPromise = session.run(query);
   resultPromise
-  .then((result) => {
-    if (result.records.length == 0) {
-      
-      res.json({
-        msg: "Error",
-      });
-    } else {
-      for (var i = 0; i < result.records.length; i++) {
-        
-        var artwork = {
-          art_id: result.records[i]._fields[0].low,
-          title: result.records[i]._fields[1],
-          img_url: imageUrlParser(result.records[i]._fields[2]),
-          author: result.records[i]._fields[3],
-          date: result.records[i]._fields[4],
-          technique: result.records[i]._fields[5],
-          location: result.records[i]._fields[6],
-          art_form: result.records[i]._fields[7],
-          art_type: result.records[i]._fields[8],
-          school: result.records[i]._fields[9],
-          rating: result.records[i]._fields[10],
-        };
-        artworks.push(artwork);
+    .then((result) => {
+      if (result.records.length == 0) {
+        res.json({
+          msg: "Error",
+        });
+      } else {
+        for (var i = 0; i < result.records.length; i++) {
+          var artwork = {
+            art_id: result.records[i]._fields[0].low,
+            title: result.records[i]._fields[1],
+            img_url: imageUrlParser(result.records[i]._fields[2]),
+            author: result.records[i]._fields[3],
+            date: result.records[i]._fields[4],
+            technique: result.records[i]._fields[5],
+            location: result.records[i]._fields[6],
+            art_form: result.records[i]._fields[7],
+            art_type: result.records[i]._fields[8],
+            school: result.records[i]._fields[9],
+            rating: result.records[i]._fields[10],
+          };
+          artworks.push(artwork);
+        }
+        res.send(artworks);
       }
-      res.send(artworks);
-      console.log(artworks)
-    }
-    session.close();
-  })
+      session.close();
+    })
     .catch((error) => {
       // handle error
       res.json({
@@ -325,7 +330,6 @@ app.post("/searchMyRatings", function (req, res) {
       session.close();
     });
 });
-
 
 function imageUrlParser(url) {
   img_url = url.replace("html", "detail").replace("html", "jpg");

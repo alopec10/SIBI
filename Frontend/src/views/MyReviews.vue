@@ -1,9 +1,9 @@
 <template>
-  <div class="myreviews" v-if="loaded">
-    <v-container  grid-list-md text-xs-center fluid>
+  <div class="myreviews">
+    <v-container  grid-list-md text-xs-center fluid v-if="render">
       <v-layout align-start justify-start row wrap>
         <v-flex 
-          v-for="artwork in artworks"
+          v-for="(artwork, index) in aw"
           v-bind:key="artwork.id"
           mt-10
           ml-10
@@ -11,14 +11,41 @@
           md="3"
           lg="2"
         >
-          <ArtworkCollapsed
-            :art_id="artwork.art_id"
-            :title="artwork.title"
-            :author="artwork.author"
-            :review_score="artwork.review_score"
-            :img_url="artwork.img_url"
-          />
+          <v-hover>
+            <ArtworkCollapsed
+              v-if="render"
+              slot-scope="{ hover }"
+              :class="`elevation-${hover ? 24 : 2}`"
+              :art_id="artwork.art_id"
+              :title="artwork.title"
+              :author="artwork.author"
+              :rating="artwork.rating.low"
+              :img_url="artwork.img_url"
+              @click.native="changeDisplay(index)"
+            />
+          </v-hover>
         </v-flex>
+      </v-layout>
+    </v-container>
+    <v-container fluid v-if="render2">
+      <v-layout align-start justify-center>
+        <ArtworkHorizontal
+          v-if="render2"
+          style="margin-top:40px;margin-left:40px"
+          :art_id="aw[i].art_id"
+          :title="aw[i].title"
+          :author="aw[i].author"
+          :date="aw[i].date"
+          :location="aw[i].location"
+          :art_form="aw[i].art_form"
+          :art_type="aw[i].art_type"
+          :school="aw[i].school"
+          :img_url="aw[i].img_url"
+          :rating="aw[i].rating.low"
+        />
+        <div @click="changeBack">
+          <v-icon large style="margin-left:30px">close</v-icon>
+        </div>
       </v-layout>
     </v-container>
   </div>
@@ -36,64 +63,10 @@ export default {
   data() {
     return {
       artworks: [],
-      loaded: false,
-      temp_artworks: [
-        {
-          art_id: 1,
-          title: "Mona Lisa",
-          author: "LEONARDO Da Vinci",
-          review_score: 4,
-          img_url: "https://www.wga.hu/detail/l/leonardo/04/0monalis.jpg",
-        },
-        {
-          art_id: 2,
-          title: "titulo1",
-          author: "author1",
-          review_score: 4,
-          img_url:
-            "https://upload.wikimedia.org/wikipedia/commons/4/47/New_york_times_square-terabass.jpg",
-        },
-        {
-          art_id: 3,
-          title: "titulo6",
-          author: "author1",
-          review_score: 4,
-          img_url:
-            "https://upload.wikimedia.org/wikipedia/commons/4/47/New_york_times_square-terabass.jpg",
-        },
-        {
-          art_id: 4,
-          title: "titulo1",
-          author: "author1",
-          review_score: 4,
-          img_url:
-            "https://upload.wikimedia.org/wikipedia/commons/4/47/New_york_times_square-terabass.jpg",
-        },
-        {
-          art_id: 5,
-          title: "titulo1",
-          author: "author1",
-          review_score: 4,
-          img_url:
-            "https://upload.wikimedia.org/wikipedia/commons/4/47/New_york_times_square-terabass.jpg",
-        },
-        {
-          art_id: 6,
-          title: "titulo1",
-          author: "author1",
-          review_score: 4,
-          img_url:
-            "https://upload.wikimedia.org/wikipedia/commons/4/47/New_york_times_square-terabass.jpg",
-        },
-        {
-          art_id: 7,
-          title: "titulo1",
-          author: "author1",
-          review_score: 4,
-          img_url:
-            "https://upload.wikimedia.org/wikipedia/commons/4/47/New_york_times_square-terabass.jpg",
-        },
-      ],
+      render: true,
+      render2: false,
+      i: 0,
+      aw: [],     
     };
   },
   computed: {
@@ -116,7 +89,7 @@ export default {
             //for (var i = 0; i < response.data.length; i++) {
             //this.aw = JSON.stringify(response.data);
             //this.aw = JSON.parse(this.aw);
-            this.artworks = response.data;
+            this.aw = response.data;
             //this.render = true;
             //}
           }
@@ -128,7 +101,15 @@ export default {
         .then(function() {
           // always executed
         });
-        this.loaded = true;
+    },
+    changeDisplay(index) {
+      this.render = false;
+      this.render2 = true;
+      this.i = index;
+    },
+    changeBack() {
+      this.render = true;
+      this.render2 = false;
     },
   },
 };
