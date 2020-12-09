@@ -146,7 +146,7 @@ app.post("/searchAWById", function (req, res) {
     "MATCH (w:ArtWork), (a)-[:MADE]->(w), (w)-[:USES_TECHNIQUE]->(t), (w)-[:LOCATED_AT]->(l), (w)-[:ITS_FORM_IS]->(f), (w)-[:ITS_TYPE_IS]->(y), (w)-[:ITS_SCHOOL_IS]->(s) WHERE ID(w)=(" +
     parseInt(id) +
     ") return ID(w), w.title, w.url, a.author_name, w.date, t.technique, l.location, f.art_form, y.arttype, s.school";
-
+  
   const session = driver.session();
 
   const resultPromise = session.run(query);
@@ -157,6 +157,7 @@ app.post("/searchAWById", function (req, res) {
           msg: "Error",
         });
       } else {
+        console.log("hola")
         for (var i = 0; i < result.records.length; i++) {
           var artwork = {
             art_id: result.records[i]._fields[0].low,
@@ -191,14 +192,14 @@ app.post("/searchAWByTitle", function (req, res) {
   var idUser = req.body.idUser;
   var artworks = [];
   var query =
-    "MATCH (w:ArtWork), (a)-[:MADE]->(w), (w)-[:USES_TECHNIQUE]->(t), (w)-[:LOCATED_AT]->(l), (w)-[:ITS_FORM_IS]->(f), "+
-    "(w)-[:ITS_TYPE_IS]->(y), (w)-[:ITS_SCHOOL_IS]->(s) WHERE TOLOWER(w.title) CONTAINS '" +
-    title +
-    "' OPTIONAL MATCH ((u:User {id: " +
-    idUser +
-    "})-[r:RATED]->(w:ArtWork)) "+
-    "RETURN ID(w), w.title, w.url, a.author_name, w.date, t.technique, l.location, f.art_form, y.arttype, s.school, r.score";
-
+  "MATCH (w:ArtWork), (a)-[:MADE]->(w), (w)-[:USES_TECHNIQUE]->(t), (w)-[:LOCATED_AT]->(l), (w)-[:ITS_FORM_IS]->(f), " +
+  "(w)-[:ITS_TYPE_IS]->(y), (w)-[:ITS_SCHOOL_IS]->(s) WHERE TOLOWER(w.title) CONTAINS '" +
+  title +
+  "' OPTIONAL MATCH ((u:User {id: " +
+  idUser +
+  "})-[r:RATED]->(w:ArtWork)) " +
+  "RETURN ID(w), w.title, w.url, a.author_name, w.date, t.technique, l.location, f.art_form, y.arttype, s.school, r.score";
+  
   const session = driver.session();
   const resultPromise = session.run(query);
   resultPromise
@@ -287,8 +288,9 @@ app.post("/searchMyRatings", function (req, res) {
   var idUser = req.body.idUser;
   var artworks = [];
   var query =
-    "MATCH (u:User)-[r:RATED]->(w:ArtWork), (a)-[:MADE]->(w), (w)-[:USES_TECHNIQUE]->(t), (w)-[:LOCATED_AT]->(l), (w)-[:ITS_FORM_IS]->(f), (w)-[:ITS_TYPE_IS]->(y), (w)-[:ITS_SCHOOL_IS]->(s) WHERE ID(u) = " +
-    idUser +
+    "MATCH (u:User)-[r:RATED]->(w:ArtWork), (a)-[:MADE]->(w), (w)-[:USES_TECHNIQUE]->(t), (w)-[:LOCATED_AT]->(l), "
+    +"(w)-[:ITS_FORM_IS]->(f), (w)-[:ITS_TYPE_IS]->(y), (w)-[:ITS_SCHOOL_IS]->(s)"
+    +"WHERE ID(u) = " +idUser +
     " RETURN ID(w), w.title, w.url, a.author_name, w.date, t.technique, l.location, f.art_form, y.arttype, s.school, r.score";
 
   const session = driver.session();

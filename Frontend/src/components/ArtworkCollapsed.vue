@@ -6,7 +6,7 @@
       max-height="415"
     >
       <div style="margin-top:307px;background-color:white;opacity:0.85">
-        <v-card-title style="padding-top:-10px; font-size:1.2em;font-weight:bold">{{title}}</v-card-title>
+        <v-card-title style="padding-top:-10px; font-size:1.15em;font-weight:bold">{{title_after}}</v-card-title>
         <v-card-subtitle>{{author}}</v-card-subtitle>
         <v-rating
           hover
@@ -15,7 +15,7 @@
           color="blue"
           dense
           style="margin-top:-12px; margin-left: 10px; padding-bottom:8px"
-          v-model="rating_after"
+          v-model="rating_after"  
           readonly
         >
         </v-rating>
@@ -30,6 +30,7 @@ export default {
   data() {
     return {
       rating_after: 0,
+      title_after: "",
     };
   },
   props: {
@@ -46,6 +47,10 @@ export default {
   },
   mounted: function() {
     this.rating_after = this.rating;
+    this.title_after = this.title;
+    if (this.title.length >22) {
+      this.title_after = this.title.substring(0,22) + "...";
+    }
   },
   methods: {
   },

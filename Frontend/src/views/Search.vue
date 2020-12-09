@@ -12,7 +12,7 @@
             label="Nombre de la obra"
             outlined
             clearable
-            style="max-width:800px"
+            style="max-width:750px"
             center
             color="blue"
             class="centered_text"

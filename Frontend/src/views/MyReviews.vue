@@ -1,12 +1,14 @@
 <template>
   <div class="myreviews">
-    <v-container  grid-list-md text-xs-center fluid v-if="render">
+    <v-container grid-list-md text-xs-center fluid v-if="render">
       <v-layout align-start justify-start row wrap>
-        <v-flex 
+        <v-flex
           v-for="(artwork, index) in aw"
           v-bind:key="artwork.id"
-          mt-10
-          ml-10
+          mt-4
+          ml-7
+          mr-7
+          mb-4
           sm="4"
           md="3"
           lg="2"
@@ -66,7 +68,7 @@ export default {
       render: true,
       render2: false,
       i: 0,
-      aw: [],     
+      aw: [],
     };
   },
   computed: {
