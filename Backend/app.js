@@ -4,9 +4,11 @@ const bodyParser = require("body-parser");
 const port = 3000;
 var cors = require("cors");
 const neo4j = require("neo4j-driver");
+var similarity = require("compute-cosine-similarity");
 const driver = neo4j.driver(
   "bolt://localhost:7687",
-  neo4j.auth.basic("neo4j", "1")
+  neo4j.auth.basic("neo4j", "1"),
+  { disableLosslessIntegers: true }
 );
 const session = driver.session();
 app.use(cors());
@@ -45,7 +47,7 @@ app.post("/SignUp", function (req, res) {
     surname +
     "', password: '" +
     passEncriptada +
-    "'}) RETURN ID(u)";
+    "'}) SET u.id = ID(u) RETURN ID(u)";
 
   const session = driver.session();
 
@@ -146,7 +148,7 @@ app.post("/searchAWById", function (req, res) {
     "MATCH (w:ArtWork), (a)-[:MADE]->(w), (w)-[:USES_TECHNIQUE]->(t), (w)-[:LOCATED_AT]->(l), (w)-[:ITS_FORM_IS]->(f), (w)-[:ITS_TYPE_IS]->(y), (w)-[:ITS_SCHOOL_IS]->(s) WHERE ID(w)=(" +
     parseInt(id) +
     ") return ID(w), w.title, w.url, a.author_name, w.date, t.technique, l.location, f.art_form, y.arttype, s.school";
-  
+
   const session = driver.session();
 
   const resultPromise = session.run(query);
@@ -157,10 +159,9 @@ app.post("/searchAWById", function (req, res) {
           msg: "Error",
         });
       } else {
-        console.log("hola")
         for (var i = 0; i < result.records.length; i++) {
           var artwork = {
-            art_id: result.records[i]._fields[0].low,
+            art_id: result.records[i]._fields[0],
             title: result.records[i]._fields[1],
             img_url: imageUrlParser(result.records[i]._fields[2]),
             author: result.records[i]._fields[3],
@@ -192,14 +193,14 @@ app.post("/searchAWByTitle", function (req, res) {
   var idUser = req.body.idUser;
   var artworks = [];
   var query =
-  "MATCH (w:ArtWork), (a)-[:MADE]->(w), (w)-[:USES_TECHNIQUE]->(t), (w)-[:LOCATED_AT]->(l), (w)-[:ITS_FORM_IS]->(f), " +
-  "(w)-[:ITS_TYPE_IS]->(y), (w)-[:ITS_SCHOOL_IS]->(s) WHERE TOLOWER(w.title) CONTAINS '" +
-  title +
-  "' OPTIONAL MATCH ((u:User {id: " +
-  idUser +
-  "})-[r:RATED]->(w:ArtWork)) " +
-  "RETURN ID(w), w.title, w.url, a.author_name, w.date, t.technique, l.location, f.art_form, y.arttype, s.school, r.score";
-  
+    "MATCH (w:ArtWork), (a)-[:MADE]->(w), (w)-[:USES_TECHNIQUE]->(t), (w)-[:LOCATED_AT]->(l), (w)-[:ITS_FORM_IS]->(f), " +
+    "(w)-[:ITS_TYPE_IS]->(y), (w)-[:ITS_SCHOOL_IS]->(s) WHERE TOLOWER(w.title) CONTAINS '" +
+    title +
+    "' OPTIONAL MATCH ((u:User {id: " +
+    idUser +
+    "})-[r:RATED]->(w:ArtWork)) " +
+    "RETURN ID(w), w.title, w.url, a.author_name, w.date, t.technique, l.location, f.art_form, y.arttype, s.school, r.score";
+
   const session = driver.session();
   const resultPromise = session.run(query);
   resultPromise
@@ -211,7 +212,7 @@ app.post("/searchAWByTitle", function (req, res) {
       } else {
         for (var i = 0; i < result.records.length; i++) {
           var artwork = {
-            art_id: result.records[i]._fields[0].low,
+            art_id: result.records[i]._fields[0],
             title: result.records[i]._fields[1],
             img_url: imageUrlParser(result.records[i]._fields[2]),
             author: result.records[i]._fields[3],
@@ -288,9 +289,10 @@ app.post("/searchMyRatings", function (req, res) {
   var idUser = req.body.idUser;
   var artworks = [];
   var query =
-    "MATCH (u:User)-[r:RATED]->(w:ArtWork), (a)-[:MADE]->(w), (w)-[:USES_TECHNIQUE]->(t), (w)-[:LOCATED_AT]->(l), "
-    +"(w)-[:ITS_FORM_IS]->(f), (w)-[:ITS_TYPE_IS]->(y), (w)-[:ITS_SCHOOL_IS]->(s)"
-    +"WHERE ID(u) = " +idUser +
+    "MATCH (u:User)-[r:RATED]->(w:ArtWork), (a)-[:MADE]->(w), (w)-[:USES_TECHNIQUE]->(t), (w)-[:LOCATED_AT]->(l), " +
+    "(w)-[:ITS_FORM_IS]->(f), (w)-[:ITS_TYPE_IS]->(y), (w)-[:ITS_SCHOOL_IS]->(s)" +
+    "WHERE ID(u) = " +
+    idUser +
     " RETURN ID(w), w.title, w.url, a.author_name, w.date, t.technique, l.location, f.art_form, y.arttype, s.school, r.score";
 
   const session = driver.session();
@@ -305,7 +307,7 @@ app.post("/searchMyRatings", function (req, res) {
       } else {
         for (var i = 0; i < result.records.length; i++) {
           var artwork = {
-            art_id: result.records[i]._fields[0].low,
+            art_id: result.records[i]._fields[0],
             title: result.records[i]._fields[1],
             img_url: imageUrlParser(result.records[i]._fields[2]),
             author: result.records[i]._fields[3],
@@ -332,6 +334,176 @@ app.post("/searchMyRatings", function (req, res) {
       session.close();
     });
 });
+
+app.post("/recommend1", function (req, res) {
+  var idUser = req.body.idUser;
+  var vectorProfile = [];
+  var vectorNonRated = [];
+  var artworks = [];
+  var queryProfile =
+    'MATCH (feature)  WHERE "Author" in labels(feature) OR "Technique" in labels(feature) OR "Art_form" in labels(feature) OR "Art_Type" in labels(feature) OR "School" in labels(feature) OR "TimeFrame" in labels(feature)  WITH feature  ORDER BY id(feature) MATCH (w:ArtWork)-[r1:RATED]-(u:User)  WHERE u.id = ' +
+    idUser +
+    " AND r1.score >= 3 OPTIONAL MATCH (w)-[r:MADE|USES_TECHNIQUE|ITS_FORM_IS|ITS_TYPE_IS|ITS_SCHOOL_IS|AT_TIMEFRAME]-(feature) WITH w, collect (CASE WHEN r IS null THEN 0 ELSE 1 END) as value RETURN value ";
+
+  var queryNonRated =
+    'MATCH (feature) WHERE "Author" in labels(feature) OR "Technique" in labels(feature) OR "Art_form" in labels(feature) OR "Art_Type" in labels(feature) OR "School" in labels(feature) OR "TimeFrame" in labels(feature)  WITH feature ORDER BY id(feature) MATCH (w:ArtWork) WHERE NOT EXISTS ((:User{id:' +
+    idUser +
+    "})-[:RATED]->(w)) OPTIONAL MATCH (w)-[r:MADE|USES_TECHNIQUE|ITS_FORM_IS|ITS_TYPE_IS|ITS_SCHOOL_IS|AT_TIMEFRAME]-(feature) WITH w, collect (CASE WHEN r IS null THEN 0 ELSE 1 END) as value RETURN w.id, value";
+
+
+  const session = driver.session();
+
+  const resultPromise = session.run(queryProfile);
+  resultPromise
+    .then((result) => {
+      if (result.records.length == 0) {
+        res.json({
+          msg: "Error",
+        });
+        session.close();
+      } else {
+        var vector = [];
+        for (var i = 0; i < result.records.length; i++) {
+          vector.push(result.records[i]._fields[0]);
+        }
+        for (var i = 0; i < vector[0].length; i++) {
+          var avg = 0;
+          for (var j = 0; j < vector.length; j++) {
+            avg = avg + vector[j][i];
+          }
+          vectorProfile.push(avg / vector.length);
+        }
+        const session2 = driver.session();
+        const resultPromise = session2.run(queryNonRated);
+        resultPromise
+          .then((result2) => {
+            if (result2.records.length == 0) {
+              res.json({
+                msg: "Error",
+              });
+            } else {
+              for (var i = 0; i < result2.records.length; i++) {
+                var pair = {
+                  id: result2.records[i]._fields[0],
+                  vector: result2.records[i]._fields[1],
+                };
+                vectorNonRated.push(pair);
+                
+              }
+              session.close();
+              vectorNonRated = computeSimilarity(vectorProfile, vectorNonRated);
+              res.send(vectorNonRated.slice(0,20));
+            }
+            session.close();
+          })
+          .catch((error) => {
+            // handle error
+            res.json({
+              msg: "Error",
+            });
+            console.log(error);
+            session.close();
+          });
+      }
+      session.close();
+    })
+    .catch((error) => {
+      // handle error
+      res.json({
+        msg: "Error",
+      });
+      console.log(error);
+      session.close();
+    });
+});
+
+function getUserVector(idUser) {
+  var vector = [];
+  var res_vector = [];
+  var query =
+    'MATCH (feature)  WHERE "Author" in labels(feature) OR "Technique" in labels(feature) OR "Art_form" in labels(feature) OR "Art_Type" in labels(feature) OR "School" in labels(feature) OR "TimeFrame" in labels(feature)  WITH feature  ORDER BY id(feature) MATCH (w:ArtWork)-[r1:RATED]-(u:User)  WHERE u.id = ' +
+    idUser +
+    " AND r1.score >= 3 OPTIONAL MATCH (w)-[r:MADE|USES_TECHNIQUE|ITS_FORM_IS|ITS_TYPE_IS|ITS_SCHOOL_IS|AT_TIMEFRAME]-(feature) WITH w, collect (CASE WHEN r IS null THEN 0 ELSE 1 END) as value RETURN value ";
+  const session = driver.session();
+
+  const resultPromise = session.run(query);
+  resultPromise
+    .then((result) => {
+      //console.log(result.records[0]._fields[0])
+      for (var i = 0; i < result.records.length; i++) {
+        vector.push(result.records[i]._fields[0]);
+      }
+      session.close();
+      for (var i = 0; i < vector[0].length; i++) {
+        var avg = 0;
+        for (var j = 0; j < vector.length; j++) {
+          avg = avg + vector[j][i];
+        }
+        res_vector.push(avg / vector.length);
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+      session.close();
+    });
+  return res_vector;
+}
+
+function getNonRatedVector(idUser, res) {
+  var res_vector = [];
+  var query =
+    'MATCH (feature) WHERE "Author" in labels(feature) OR "Technique" in labels(feature) OR "Art_form" in labels(feature) OR "Art_Type" in labels(feature) OR "School" in labels(feature) OR "TimeFrame" in labels(feature)  WITH feature ORDER BY id(feature) MATCH (w:ArtWork) WHERE NOT EXISTS ((:User{id:' +
+    idUser +
+    "})-[:RATED]->(w)) OPTIONAL MATCH (w)-[r:MADE|USES_TECHNIQUE|ITS_FORM_IS|ITS_TYPE_IS|ITS_SCHOOL_IS|AT_TIMEFRAME]-(feature) WITH w, collect (CASE WHEN r IS null THEN 0 ELSE 1 END) as value RETURN w.id as id, value as value";
+
+  const session = driver.session();
+
+  session.run(query).subscribe({
+    onNext: function (record) {
+      res_var = {
+        id: record.get("id"),
+        vector: record.get("value"),
+      };
+      res_vector.push(res_var);
+    },
+    onCompleted: function () {
+      session.close();
+      console.log(res_vector);
+      return res_vector;
+    },
+    onError: function (error) {
+      console.log(error);
+    },
+  });
+  // const resultPromise = session.run(query);
+  // resultPromise
+  //   .then((result) => {
+  //     //console.log(result.records[0]._fields[0])
+  //     for (var i = 0; i < result.records.length; i++) {
+  //       res_var = {
+  //         id: result.records[i]._fields[0],
+  //         vector: result.records[i]._fields[1],
+  //       };
+  //       res_vector.push(res_var);
+  //     }
+  //     session.close();
+  //     return res_vector;
+  //     //console.log(res_vector)
+
+  //   })
+  //   .catch((error) => {
+  //     console.log(error);
+  //     session.close();
+  //   });
+}
+
+function computeSimilarity(v1, v2) {
+  for (var i = 0; i < v2.length; i++) {
+    v2[i].similarity = similarity(v1, v2[i].vector);
+  }
+  v2.sort((a,b)=> (a.similarity < b.similarity ? 1 : -1))
+  return v2;
+}
 
 function imageUrlParser(url) {
   img_url = url.replace("html", "detail").replace("html", "jpg");

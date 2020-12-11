@@ -21,7 +21,7 @@
               :art_id="artwork.art_id"
               :title="artwork.title"
               :author="artwork.author"
-              :rating="artwork.rating.low"
+              :rating="artwork.rating"
               :img_url="artwork.img_url"
               @click.native="changeDisplay(index)"
             />
@@ -43,7 +43,7 @@
           :art_type="aw[i].art_type"
           :school="aw[i].school"
           :img_url="aw[i].img_url"
-          :rating="aw[i].rating.low"
+          :rating="aw[i].rating"
         />
         <div @click="changeBack">
           <v-icon large style="margin-left:30px">close</v-icon>
@@ -92,6 +92,7 @@ export default {
             //this.aw = JSON.stringify(response.data);
             //this.aw = JSON.parse(this.aw);
             this.aw = response.data;
+            console.log(response.data)
             //this.render = true;
             //}
           }

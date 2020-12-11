@@ -218,7 +218,7 @@ export default {
             } else {
               this.logearse();
               this.setEmail(this.email);
-              this.setIdUser(JSON.stringify(response.data.low));
+              this.setIdUser(JSON.stringify(response.data));
               this.$router.push("/Intro");
             }
           });
@@ -244,7 +244,7 @@ export default {
           } else {
             this.logearse();
             this.setEmail(this.email);
-            this.setIdUser(JSON.stringify(response.data.low));
+            this.setIdUser(JSON.stringify(response.data));
             this.$router.push("/Home");
           }
         });
