@@ -1,5 +1,11 @@
 <template>
   <div class="myreviews">
+    <h1
+      style="font-family: Montserrat Alternates; margin-top: 50px; margin-bottom: 40px;font-size: 3.7em"
+      class="text-center blue--text"
+    >
+      MIS VALORACIONES
+    </h1>
     <v-container grid-list-md text-xs-center fluid v-if="render">
       <v-layout align-start justify-start row wrap>
         <v-flex
@@ -44,6 +50,7 @@
           :school="aw[i].school"
           :img_url="aw[i].img_url"
           :rating="aw[i].rating"
+          :avg="aw[i].avg"
         />
         <div @click="changeBack">
           <v-icon large style="margin-left:30px">close</v-icon>
@@ -65,7 +72,7 @@ export default {
   data() {
     return {
       artworks: [],
-      render: true,
+      render: false,
       render2: false,
       i: 0,
       aw: [],
@@ -88,13 +95,7 @@ export default {
           if (JSON.stringify(response.data) == JSON.stringify(json)) {
             alert("No has valorado ninguna obra todavía");
           } else {
-            //for (var i = 0; i < response.data.length; i++) {
-            //this.aw = JSON.stringify(response.data);
-            //this.aw = JSON.parse(this.aw);
             this.aw = response.data;
-            console.log(response.data)
-            //this.render = true;
-            //}
           }
         })
         .catch((error) => {
@@ -109,6 +110,7 @@ export default {
       this.render = false;
       this.render2 = true;
       this.i = index;
+      
     },
     changeBack() {
       this.render = true;

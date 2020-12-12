@@ -1,24 +1,30 @@
 <template>
   <div class="search">
-    <v-container  class="fill-height">
+    <v-container class="fill-height">
       <v-row align="center" justify="center" no-gutters>
         <v-col cols="12" sm="8" md="8" class="">
-          <h1 style="font-family: Montserrat Alternates; margin-top: 20px; font-size: 3em" class="text-center mb-8 blue--text" >
-            Búsqueda de obras
+          <h1
+            style="font-family: Montserrat Alternates; margin-top: 40px; font-size: 3.7em"
+            class="text-center mb-4 blue--text"
+          >
+            BÚSQUEDA DE OBRAS
           </h1>
+          <v-container fill-height>
+            <v-layout align-center justify-center>
+              <v-text-field
+                v-model="searchTitle"
+                label="Nombre de la obra"
+                outlined
+                style="max-width:750px"
+                center
+                color="blue"
+                class="centered_text"
+              ></v-text-field>
+            </v-layout>
+          </v-container>
 
-          <v-text-field
-            v-model="searchTitle"
-            label="Nombre de la obra"
-            outlined
-            clearable
-            style="max-width:750px"
-            center
-            color="blue"
-            class="centered_text"
-          ></v-text-field>
           <div class="text-center">
-            <v-btn @click="searchByTitle" large color="blue" dark>Buscar</v-btn>
+            <v-btn @click="searchByTitle" x-large color="blue" dark>Buscar</v-btn>
           </div>
         </v-col>
       </v-row>
@@ -65,6 +71,7 @@
           :school="aw[i].school"
           :img_url="aw[i].img_url"
           :rating="aw[i].rating"
+          :avg="aw[i].avg"
         />
         <div @click="changeBack">
           <v-icon large style="margin-left:30px">close</v-icon>
@@ -80,7 +87,6 @@
 .search {
   font-family: Montserrat, "Montserrat Alternates";
 }
-
 
 .centered_text input {
   text-align: center;
@@ -112,7 +118,7 @@ export default {
   },
   methods: {
     searchByTitle: function() {
-      const constData = {title: this.searchTitle, idUser: this.idUser };
+      const constData = { title: this.searchTitle, idUser: this.idUser };
       axios
         .post("http://localhost:3000/searchAWByTitle", constData)
         .then((response) => {

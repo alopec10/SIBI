@@ -3,11 +3,11 @@
     <v-img
       :src="img_url"
       ref="imageShow"
-      max-height="415"
+      max-height="390"
     >
-      <div style="margin-top:307px;background-color:white;opacity:0.85">
+      <div style="margin-top:280px;background-color:white;opacity:0.85">
         <v-card-title style="padding-top:-10px; font-size:1.15em;font-weight:bold">{{title_after}}</v-card-title>
-        <v-card-subtitle>{{author}}</v-card-subtitle>
+        <v-card-subtitle>{{author_after}}</v-card-subtitle>
         <v-rating
           hover
           length="5"
@@ -31,6 +31,7 @@ export default {
     return {
       rating_after: 0,
       title_after: "",
+      author_after: ""
     };
   },
   props: {
@@ -44,12 +45,17 @@ export default {
     art_form: "",
     art_type: "",
     school: "",
+    avg:""
   },
   mounted: function() {
     this.rating_after = this.rating;
     this.title_after = this.title;
     if (this.title.length >22) {
       this.title_after = this.title.substring(0,22) + "...";
+    }
+    this.author_after = this.author;
+    if (this.author.length >22) {
+      this.author_after = this.author.substring(0,31) + "...";
     }
   },
   methods: {

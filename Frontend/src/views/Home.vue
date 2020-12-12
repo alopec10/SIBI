@@ -1,59 +1,100 @@
 <template>
   <div class="home">
-    <v-text-field
+    <!-- <v-text-field
       v-model="searchId"
       label="Nombre de la obra"
       outlined
       clearable
     ></v-text-field>
-    <v-btn @click="searchById"></v-btn>
-
-    <v-container class="fill-height">
+    <v-btn @click="searchById"></v-btn> -->
+    <h1
+      style="font-family: Montserrat Alternates; margin-top: 70px; margin-bottom: 50px;font-size: 4.3em"
+      class="text-center blue--text"
+    >
+      RECOMENDACIÓN
+    </h1>
+    <v-container
+      class="fill-height"
+      fluid
+      style
+      mt-16
+      mb-13
+      v-if="displayOpciones"
+    >
       <v-row align="center" justify="center" no-gutters>
         <v-col>
           <div class="text-center">
             <h1
-              style="font-family: Montserrat Alternates; font-size: 2em"
+              style="font-family: Montserrat Alternates; font-size: 3.2em"
               class="mb-8 blue--text"
             >
               Mis gustos
             </h1>
-            <v-btn @click="recommend" large color="blue" dark
+            <p
+              style="font-family: Montserrat Alternates; font-size: 1.3em"
+              class="mb-10 #4c4f4d--text"
+            >
+              Mostrar las obras más parecidas <br />a las que te han gustado
+            </p>
+            <v-btn @click="recommendContentBased" x-large color="blue" dark
               >Recomiéndame</v-btn
             >
           </div>
         </v-col>
-        <v-divider vertical></v-divider>
+        <v-divider vertical color="#367acf"></v-divider>
         <v-col>
           <div class="text-center">
             <h1
-              style="font-family: Montserrat Alternates; font-size: 2em"
+              style="font-family: Montserrat Alternates; font-size: 3.2em"
               class="mb-8 blue--text"
             >
               Colaborativo
             </h1>
-            <v-btn @click="recommend" large color="blue" dark
+            <p
+              style="font-family: Montserrat Alternates; font-size: 1.3em"
+              class="mb-10 #4c4f4d--text"
+            >
+              Mostrar las obras que le hayan gustado a <br />usuarios muy
+              parecidos a tí
+            </p>
+            <v-btn @click="recommendCollaborative" x-large color="blue" dark
               >Recomiéndame</v-btn
             >
           </div>
         </v-col>
-        <v-divider vertical></v-divider>
+        <v-divider vertical color="#367acf"></v-divider>
         <v-col>
           <div class="text-center">
             <h1
-              style="font-family: Montserrat Alternates; font-size: 2em"
+              style="font-family: Montserrat Alternates; font-size: 3.2em"
               class="mb-8 blue--text"
             >
-              Mis gustos
+              Mejor valoradas
             </h1>
-            <v-btn @click="recommend" large color="blue" dark
-              >Recomiéndame</v-btn
+            <p
+              style="font-family: Montserrat Alternates; font-size: 1.3em"
+              class="mb-10 #4c4f4d--text"
             >
+              Mostrar las obras con mejor <br />valoración de entre todos los
+              usuarios
+            </p>
+            <v-btn @click="bestRated" x-large color="blue" dark>MOSTRAR</v-btn>
           </div>
         </v-col>
       </v-row>
     </v-container>
-
+    <v-container class="fill-height" v-if="displayTitle != 0" fluid>
+      <v-layout align-center justify-center>
+        <h1
+          style="font-family: Montserrat Alternates; font-size: 3.5em"
+          class="mb-8 blue--text"
+        >
+          <div v-if="displayTitle == 1">Mis gustos</div>
+          <div v-if="displayTitle == 2">Colaborativo</div>
+          <div v-if="displayTitle == 3">Mejor valoradas</div>
+        </h1>
+      </v-layout>
+    </v-container>
     <v-container grid-list-md text-xs-center fluid v-if="render">
       <v-layout align-start justify-start row wrap>
         <v-flex
@@ -96,6 +137,7 @@
           :school="aw[i].school"
           :img_url="aw[i].img_url"
           :rating="aw[i].rating"
+          :avg="aw[i].avg"
         />
         <div @click="changeBack">
           <v-icon large style="margin-left:30px">close</v-icon>
@@ -122,20 +164,9 @@ export default {
       searchId: "",
       render: false,
       render2: false,
-      artworks: [
-        {
-          art_id: 1,
-          title: "Vitruvian man",
-          author: "LEONARDO da Vinci",
-          review_score: null,
-          date: "1492",
-          location: "Gallerie dell'Accademia, Venice",
-          type: "graphics",
-          school: "Italian",
-          img_url:
-            "https://www.wga.hu/detail/l/leonardo/10anatom/1vitruviu.jpg",
-        },
-      ],
+      displayOpciones: true,
+      displayTitle: 0,
+      i: 0,
       aw: [],
     };
   },
@@ -146,7 +177,7 @@ export default {
     searchById: function() {
       axios
         .post("http://localhost:3000/searchAWById", {
-          id: this.searchId,
+          idAW: this.searchId, idUser: this.idUser
         })
         .then((response) => {
           // handle success
@@ -156,13 +187,8 @@ export default {
               "No se ha encontrado ninguna obra con ese nombre. Recuerda buscar en inglés"
             );
           } else {
-            //for (var i = 0; i < response.data.length; i++) {
-            //this.aw = JSON.stringify(response.data);
-            //this.aw = JSON.parse(this.aw);
             this.aw = response.data;
             this.render = true;
-            console.log(this.aw);
-            //}
           }
         })
         .catch((error) => {
@@ -173,17 +199,17 @@ export default {
           // always executed
         });
     },
-    recommend: function() {
+    recommendContentBased: function() {
+      this.displayOpciones = false;
+      this.displayTitle = 1;
       const constData = { idUser: this.idUser };
       axios
-        .post("http://localhost:3000/recommend1", constData)
+        .post("http://localhost:3000/recommendContentBased", constData)
         .then((response) => {
           // handle success
           var json = { msg: "Error" };
           if (JSON.stringify(response.data) == JSON.stringify(json)) {
-            alert(
-              "     " /////////////////////////////////////////////////////
-            );
+            alert("Se ha producido un error. Inténtalo de nuevo más tarde.");
           } else {
             this.askAW(response.data);
           }
@@ -191,9 +217,49 @@ export default {
         .catch((error) => {
           // handle error
           console.log(error);
+        });
+    },
+
+    recommendCollaborative: function() {
+      this.displayOpciones = false;
+      this.displayTitle = 2;
+      const constData = { idUser: this.idUser };
+      axios
+        .post("http://localhost:3000/recommendCollaborative", constData)
+        .then((response) => {
+          // handle success
+          var json = { msg: "Error" };
+          if (JSON.stringify(response.data) == JSON.stringify(json)) {
+            alert("Se ha producido un error. Inténtalo de nuevo más tarde.");
+          } else {
+            this.askAW(response.data);
+          }
         })
-        .then(function() {
-          // always executed
+        .catch((error) => {
+          // handle error
+          console.log(error);
+        });
+    },
+
+    bestRated: function() {
+      this.displayOpciones = false;
+      this.displayTitle = 3;
+      const constData = { idUser: this.idUser };
+      axios
+        .post("http://localhost:3000/bestRated", constData)
+        .then((response) => {
+          // handle success
+          var json = { msg: "Error" };
+          if (JSON.stringify(response.data) == JSON.stringify(json)) {
+            alert("Se ha producido un error. Inténtalo de nuevo más tarde.");
+          } else {
+            this.aw = response.data;
+            this.render = true;
+          }
+        })
+        .catch((error) => {
+          // handle error
+          console.log(error);
         });
     },
 
@@ -203,13 +269,11 @@ export default {
         //console.log(array[i].id)
         axios
           .post("http://localhost:3000/searchAWById", {
-            id: array[i].id,
+            idAW: array[i].id,
+            idUser: this.idUser
           })
           .then((response) => {
-            // handle success
-
             this.aw.push(response.data[0]);
-            //console.log(response.data[0]);
           })
           .catch((error) => {
             // handle error
@@ -218,11 +282,13 @@ export default {
       }
       this.render = true;
     },
+
     changeDisplay(index) {
       this.render = false;
       this.render2 = true;
       this.i = index;
     },
+
     changeBack() {
       this.render = true;
       this.render2 = false;

@@ -10,11 +10,12 @@
         </v-col>
         <v-col>
           <v-card width="500" elevation="0">
-            <v-card-title 
+            <v-card-title
               style="font-size:2.5em; font-weight:bold; margin-top: 10px"
-              >{{ title }}</v-card-title
             >
-            <v-card-subtitle style="margin-top:10px;font-size:2em">{{
+                {{ title }}</v-card-title
+            >
+            <v-card-subtitle style="margin-top:10px;font-size:1.8em">{{
               author
             }}</v-card-subtitle>
             <v-card-text style="margin-top:10px;font-size:1em">{{
@@ -33,22 +34,32 @@
               >{{ school }} school</v-card-text
             >
             <v-card-text style="font-size:1em">Danos tu opinión</v-card-text>
-            <v-rating
-              hover
-              length="5"
-              size="50"
-              color="blue"
-              v-model="rating_after"
-              @input="ratingUpdate"
-            >
-            </v-rating>
+            <v-container class="fill-height" fluid style="padding: 0px">
+              <v-row align="center" justify="center" no-gutters>
+                <v-col>
+                  <v-rating
+                    hover
+                    length="5"
+                    size="50"
+                    color="blue"
+                    v-model="rating_after"
+                    @input="ratingUpdate"
+                  >
+                  </v-rating>
+                </v-col>
+                <v-col
+                  ><span style="font-size: 1.7em; padding-left: 10px">
+                    ({{ avg.toFixed(1) }})
+                  </span></v-col
+                >
+              </v-row>
+            </v-container>
           </v-card>
         </v-col>
       </v-row>
     </v-container>
   </v-card>
 </template>
-
 
 <script>
 import { mapState } from "vuex";
@@ -71,6 +82,7 @@ export default {
     art_form: "",
     art_type: "",
     school: "",
+    avg: "",
   },
   mounted: function() {
     this.rating_after = this.rating;
