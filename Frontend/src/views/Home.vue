@@ -54,7 +54,7 @@
               style="font-family: Montserrat Alternates; font-size: 1.3em"
               class="mb-10 #4c4f4d--text"
             >
-              Mostrar las obras que le hayan gustado a <br />usuarios muy
+              Mostrar las obras que le hayan gustado<br />a usuarios muy
               parecidos a tí
             </p>
             <v-btn @click="recommendCollaborative" x-large color="blue" dark
