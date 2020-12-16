@@ -232,7 +232,8 @@ export default {
           if (JSON.stringify(response.data) == JSON.stringify(json)) {
             alert("Se ha producido un error. Inténtalo de nuevo más tarde.");
           } else {
-            this.askAW(response.data);
+            this.aw = response.data;
+            this.render = true;
           }
         })
         .catch((error) => {

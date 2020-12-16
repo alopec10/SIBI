@@ -96,6 +96,7 @@ export default {
             alert("No has valorado ninguna obra todavía");
           } else {
             this.aw = response.data;
+            this.render = true;
           }
         })
         .catch((error) => {

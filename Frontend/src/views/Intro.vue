@@ -242,8 +242,7 @@ export default {
             var json = { msg: "Error" };
             if (JSON.stringify(response.data) == JSON.stringify(json)) {
               alert(
-                "No se ha encontrado ninguna obra con ese nombre. Recuerda buscar en inglés. " +
-                  i
+                "No se ha encontrado ninguna obra con ese nombre. Recuerda buscar en inglés. "
               );
             } else {
               this.aw.push(response.data[0]);
